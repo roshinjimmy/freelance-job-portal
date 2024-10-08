@@ -23,36 +23,36 @@ export default function FindFreelancers() {
   return (
     <div>
       {/* Header */}
-      <header className="flex justify-between items-center py-4 px-8 bg-white shadow-md">
+      <header className="flex justify-between items-center py-4 px-8 bg-gray-800">
         <div className="logo">
-          <h1 className="text-xl font-bold">FreelancePortal</h1>
+          <h1 className="text-xl font-bold text-white">FreelancePortal</h1>
         </div>
         <nav>
           <ul className="flex space-x-4">
-            <li><a href="/" className="hover:text-blue-500">Home</a></li>
-            <li><a href="/find-freelancers" className="hover:text-blue-500">Find Freelancers</a></li>
-            <li><a href="#" className="hover:text-blue-500">Post a Project</a></li>
-            <li><a href="#" className="hover:text-blue-500">How it Works</a></li>
-            <li><a href="#" className="hover:text-blue-500">Contact Us</a></li>
+            <li><a href="/" className="text-gray-300 hover:text-blue-400">Home</a></li>
+            <li><a href="/find-freelancers" className="text-gray-300 hover:text-blue-400">Find Freelancers</a></li>
+            <li><a href="#" className="text-gray-300 hover:text-blue-400">Post a Project</a></li>
+            <li><a href="#" className="text-gray-300 hover:text-blue-400">How it Works</a></li>
+            <li><a href="#" className="text-gray-300 hover:text-blue-400">Contact Us</a></li>
           </ul>
         </nav>
         <div>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Login</button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md">Sign Up</button>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-700">Login</button>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Sign Up</button>
         </div>
       </header>
 
       {/* Search Section */}
-      <section className="bg-gray-100 py-10">
+      <section className="bg-gray-900 py-10">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-6">Find Freelancers</h2>
+          <h2 className="text-3xl font-bold text-center text-white mb-6">Find Freelancers</h2>
           <div className="flex justify-center mb-6">
             <input
               type="text"
               placeholder="Search for freelancers by name or skill..."
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full max-w-md px-4 py-2 border rounded-md"
+              className="w-full max-w-md px-4 py-2 border border-gray-600 rounded-md bg-gray-800 text-white placeholder-gray-400"
             />
           </div>
         </div>
@@ -64,17 +64,17 @@ export default function FindFreelancers() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredFreelancers.length > 0 ? (
               filteredFreelancers.map((freelancer) => (
-                <div key={freelancer.id} className="bg-white p-6 shadow-md rounded-md">
-                  <h3 className="text-xl font-bold mb-2">{freelancer.name}</h3>
-                  <p className="mb-2">Skill: {freelancer.skill}</p>
-                  <p className="mb-2">Rate: {freelancer.rate}</p>
-                  <p className="mb-2">Location: {freelancer.location}</p>
-                  <p className="mb-2">Rating: ⭐ {freelancer.rating}</p>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-md">View Profile</button>
+                <div key={freelancer.id} className="bg-gray-800 p-6 shadow-md rounded-md transition-transform transform hover:scale-105">
+                  <h3 className="text-xl font-bold text-white mb-2">{freelancer.name}</h3>
+                  <p className="mb-2 text-gray-300">Skill: {freelancer.skill}</p>
+                  <p className="mb-2 text-gray-300">Rate: {freelancer.rate}</p>
+                  <p className="mb-2 text-gray-300">Location: {freelancer.location}</p>
+                  <p className="mb-2 text-gray-300">Rating: ⭐ {freelancer.rating}</p>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">View Profile</button>
                 </div>
               ))
             ) : (
-              <p className="text-center col-span-full">No freelancers found matching your criteria.</p>
+              <p className="text-center col-span-full text-gray-400">No freelancers found matching your criteria.</p>
             )}
           </div>
         </div>
