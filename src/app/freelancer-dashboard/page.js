@@ -1,114 +1,171 @@
 "use client"; // Required for client-side interactivity
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Importing useRouter
+import { useRouter } from "next/navigation";
+import { supabase } from "../../supabaseClient"; // Import the Supabase client
 
 export default function FreelancerDashboard() {
-  const [availableProjects, setAvailableProjects] = useState([]);
-  const [bids, setBids] = useState([]);
+  const [user, setUser] = useState(null);
+  const [freelancer, setFreelancer] = useState(null); // State to store freelancer information
+  const [projects, setProjects] = useState([]);
+  const [currentProjects, setCurrentProjects] = useState([]); // State to store current projects
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  // Fetch available projects (simulate data fetch)
   useEffect(() => {
-    const fetchAvailableProjects = async () => {
-      // Simulating an API call to fetch available projects
-      const projects = [
-        {
-          id: 1,
-          title: "Website Development",
-          description: "Develop a website using React and Node.js.",
-          budget: "$500",
-          skills: "JavaScript, React",
-        },
-        {
-          id: 2,
-          title: "Mobile App Design",
-          description: "Create a mobile app design for a shopping platform.",
-          budget: "$300",
-          skills: "UI/UX, Mobile Design",
-        },
-      ];
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      setUser(userData);
+      fetchFreelancerData(userData.user_id); // Fetch freelancer data
+    } else {
+      router.push("/login"); // Redirect to login if no user is found
+    }
+  }, [router]);
 
-      setAvailableProjects(projects);
-    };
+  const fetchFreelancerData = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from("freelancers")
+        .select("*")
+        .eq("user_id", userId) // Get freelancer by user_id
+        .single(); // Get single freelancer data
 
-    fetchAvailableProjects();
-  }, []);
+      if (error) throw error;
+      setFreelancer(data);
 
-  // Fetch bids placed by the freelancer (simulate data fetch)
-  useEffect(() => {
-    const fetchBids = async () => {
-      // Simulating an API call to fetch the freelancer's bids
-      const freelancerBids = [
-        {
-          projectId: 1,
-          projectTitle: "Website Development",
-          bidAmount: 450,
-          status: "Pending",
-        },
-        {
-          projectId: 2,
-          projectTitle: "Mobile App Design",
-          bidAmount: 300,
-          status: "Accepted",
-        },
-      ];
+      // After fetching freelancer data, fetch available and current projects
+      fetchAvailableProjects();
+      fetchCurrentProjects(data.freelancer_id); // Fetch current projects
+    } catch (error) {
+      console.error("Error fetching freelancer data:", error);
+      setError("Failed to fetch freelancer data.");
+    }
+  };
 
-      setBids(freelancerBids);
-    };
+  const fetchAvailableProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .is("freelancer_id", null); // Fetch projects that are not yet assigned
 
-    fetchBids();
-  }, []);
+      if (error) throw error;
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setError("Failed to fetch available projects.");
+    }
+  };
 
-  const handleBidNow = (projectId) => {
-    router.push(`/project/${projectId}`);
+  const fetchCurrentProjects = async (freelancerId) => {
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("freelancer_id", freelancerId); // Fetch projects assigned to the freelancer
+
+      if (error) throw error;
+      setCurrentProjects(data);
+    } catch (error) {
+      console.error("Error fetching current projects:", error);
+      setError("Failed to fetch current projects.");
+    }
+  };
+
+  const handleSelectProject = async (projectId) => {
+    setError("");
+    setSelectedProjectId(projectId);
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ freelancer_id: freelancer.freelancer_id }) // Update the project with the freelancer's ID
+        .eq("project_id", projectId);
+
+      if (error) throw error;
+
+      // Refresh the projects list after selection
+      fetchAvailableProjects();
+      fetchCurrentProjects(freelancer.freelancer_id); // Refresh current projects
+    } catch (error) {
+      console.error("Error selecting project:", error);
+      setError("Failed to select project.");
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("user");
+    router.push("/login"); // Redirect to login page
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-4xl mx-auto bg-gray-800 p-8 shadow-md rounded-md">
-        <h1 className="text-3xl font-bold mb-6 text-white">Freelancer Dashboard</h1>
+    <div className="flex min-h-screen bg-gray-900">
+      {/* Sidebar */}
+      <div className="w-1/4 bg-gray-800 p-6">
+        <h2 className="text-2xl font-bold text-white mb-4">Freelancer Details</h2>
+        {freelancer ? (
+          <div className="text-white">
+            <p><strong>Name:</strong> {user.name}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Experience Level:</strong> {freelancer.experience_level}</p>
+            <p>
+              <strong>Skills:</strong> {Array.isArray(freelancer.skills) ? freelancer.skills.join(", ") : "No skills listed"}
+            </p>
+            <button
+              onClick={handleSignOut}
+              className="mt-6 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <p className="text-gray-400">Loading freelancer data...</p>
+        )}
+      </div>
 
-        {/* Available Projects */}
-        <div>
-          <h2 className="text-2xl font-semibold mb-4 text-gray-300">Available Projects</h2>
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        <h1 className="text-3xl font-bold text-white mb-6">Freelancer Dashboard</h1>
 
-          {availableProjects.length > 0 ? (
-            availableProjects.map((project) => (
-              <div key={project.id} className="bg-gray-700 border border-gray-600 p-4 mb-4 rounded-md shadow-sm hover:shadow-lg transition-shadow duration-300">
-                <h3 className="text-lg font-bold text-white">{project.title}</h3>
-                <p className="text-gray-400">{project.description}</p>
-                <p className="text-gray-300"><strong>Budget:</strong> {project.budget}</p>
-                <p className="text-gray-300"><strong>Required Skills:</strong> {project.skills}</p>
+        {error && <p className="text-red-500">{error}</p>}
+
+        <h3 className="text-2xl font-semibold text-white mb-4">Current Projects</h3>
+        {currentProjects.length > 0 ? (
+          <ul className="list-disc list-inside bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
+            {currentProjects.map((project) => (
+              <li key={project.project_id} className="text-white mb-4">
+                <strong>Project Name:</strong> {project.project_name} <br />
+                <strong>Project Description:</strong> {project.project_description} <br />
+                <strong>Specified Price:</strong> ${project.specified_price} <br />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-white mb-6">You are not currently working on any projects.</p>
+        )}
+
+        <h3 className="text-2xl font-semibold text-white mb-4">Available Projects</h3>
+        {projects.length > 0 ? (
+          <ul className="list-disc list-inside bg-gray-800 p-4 rounded-lg shadow-lg">
+            {projects.map((project) => (
+              <li key={project.project_id} className="text-white mb-4">
+                <strong>Project Name:</strong> {project.project_name} <br />
+                <strong>Project Description:</strong> {project.project_description} <br />
+                <strong>Specified Price:</strong> ${project.specified_price} <br />
                 <button
-                  onClick={() => handleBidNow(project.id)}
-                  className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200"
+                  onClick={() => handleSelectProject(project.project_id)}
+                  className="mt-2 bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700"
                 >
-                  Bid Now
+                  Select Project
                 </button>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">No projects available at the moment.</p>
-          )}
-        </div>
-
-        {/* Bids Status */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-300">Your Bids</h2>
-
-          {bids.length > 0 ? (
-            bids.map((bid, index) => (
-              <div key={index} className="bg-gray-700 border border-gray-600 p-4 mb-4 rounded-md shadow-sm hover:shadow-lg transition-shadow duration-300">
-                <h3 className="text-lg font-bold text-white">{bid.projectTitle}</h3>
-                <p className="text-gray-300"><strong>Bid Amount:</strong> ${bid.bidAmount}</p>
-                <p className="text-gray-300"><strong>Status:</strong> {bid.status}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">You haven't placed any bids yet.</p>
-          )}
-        </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-white">No available projects at the moment.</p>
+        )}
       </div>
     </div>
   );
