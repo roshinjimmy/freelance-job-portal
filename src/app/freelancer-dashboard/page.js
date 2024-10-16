@@ -8,7 +8,7 @@ import { FaUser, FaSignOutAlt, FaProjectDiagram } from "react-icons/fa"; // Impo
 export default function FreelancerDashboard() {
   const [user, setUser] = useState(null);
   const [freelancer, setFreelancer] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const [availableProjects, setAvailableProjects] = useState([]);
   const [currentProjects, setCurrentProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [error, setError] = useState("");
@@ -51,7 +51,7 @@ export default function FreelancerDashboard() {
         .is("freelancer_id", null);
 
       if (error) throw error;
-      setProjects(data);
+      setAvailableProjects(data);
     } catch (error) {
       console.error("Error fetching projects:", error);
       setError("Failed to fetch available projects.");
@@ -99,19 +99,34 @@ export default function FreelancerDashboard() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-900 md:flex-row">
       {/* Sidebar */}
-      <div className="w-full md:w-1/4 bg-gray-800 p-6 md:h-auto">
-        <h2 className="text-2xl font-bold text-white mb-4">Freelancer Details</h2>
+      <div className="w-full md:w-1/4 bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-white mb-4">
+          Freelancer Details
+        </h2>
         {freelancer ? (
           <div className="text-white">
-            <p className="flex items-center"> <strong>Name:&nbsp;</strong> {user.name}</p>
-            <p className="flex items-center"> <strong>Email:&nbsp;</strong> {user.email}</p>
-            <p className="flex items-center"> <strong>Experience Level:&nbsp;</strong> {freelancer.experience_level}</p>
-            <p className="flex items-center"> <strong>Skills:&nbsp;</strong> {Array.isArray(freelancer.skills) ? freelancer.skills.join(", ") : (typeof freelancer.skills === 'string' ? freelancer.skills.split(',').join(', ') : "No skills listed")}</p>
+            <p>
+              <strong>Name:</strong> {user.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {user.email}
+            </p>
+            <p>
+              <strong>Experience Level:</strong> {freelancer.experience_level}
+            </p>
+            <p>
+              <strong>Skills:</strong>{" "}
+              {Array.isArray(freelancer.skills)
+                ? freelancer.skills.join(", ")
+                : typeof freelancer.skills === "string"
+                ? freelancer.skills.split(",").join(", ")
+                : "No skills listed"}
+            </p>
             <button
               onClick={handleSignOut}
-              className="mt-6 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 flex items-center"
+              className="mt-6 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
             >
               <FaSignOutAlt className="mr-2" /> Sign Out
             </button>
@@ -123,44 +138,64 @@ export default function FreelancerDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-white mb-6">Freelancer Dashboard</h1>
+        <h1 className="text-3xl font-bold text-white mb-6">
+          Freelancer Dashboard
+        </h1>
 
         {error && <p className="text-red-500">{error}</p>}
 
-        <h3 className="text-2xl font-semibold text-white mb-4">Current Projects</h3>
-        {currentProjects.length > 0 ? (
-          <ul className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
-            {currentProjects.map((project) => (
-              <li key={project.project_id} className="text-white mb-4 border-b border-gray-700 pb-2">
-                <strong>Project Name:</strong> {project.project_name} <br />
-                <strong>Project Description:</strong> {project.project_description} <br />
-                <strong>Specified Price:</strong> ${project.specified_price} <br />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-white mb-6">You are not currently working on any projects.</p>
-        )}
-
-        <h3 className="text-2xl font-semibold text-white mb-4">Available Projects</h3>
-        {projects.length > 0 ? (
-          <ul className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            {projects.map((project) => (
-              <li key={project.project_id} className="text-white mb-4 border-b border-gray-700 pb-2">
-                <strong>Project Name:</strong> {project.project_name} <br />
-                <strong>Project Description:</strong> {project.project_description} <br />
-                <strong>Specified Price:</strong> ${project.specified_price} <br />
+        <h3 className="text-2xl font-semibold text-white mb-2">
+          Available Projects
+        </h3>
+        {availableProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {availableProjects.map((project) => (
+              <div
+                key={project.project_id}
+                className="bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <h4 className="text-lg font-semibold text-white">
+                  {project.project_name}
+                </h4>
+                <p className="text-gray-400">{project.project_description}</p>
+                <p className="text-white mt-2">
+                  <strong>Specified Price:</strong> ${project.specified_price}
+                </p>
                 <button
                   onClick={() => handleSelectProject(project.project_id)}
-                  className="mt-2 bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700 flex items-center"
+                  className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 flex items-center"
                 >
                   <FaProjectDiagram className="mr-2" /> Select Project
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-white">No available projects at the moment.</p>
+          <p className="text-white">No available projects.</p>
+        )}
+
+        <h3 className="text-2xl font-semibold text-white mb-2 mt-6">
+          Current Projects
+        </h3>
+        {currentProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {currentProjects.map((project) => (
+              <div
+                key={project.project_id}
+                className="bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <h4 className="text-lg font-semibold text-white">
+                  {project.project_name}
+                </h4>
+                <p className="text-gray-400">{project.project_description}</p>
+                <p className="text-white mt-2">
+                  <strong>Specified Price:</strong> ${project.specified_price}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-white">No current projects.</p>
         )}
       </div>
     </div>
