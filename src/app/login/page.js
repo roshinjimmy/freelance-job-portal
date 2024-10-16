@@ -218,7 +218,7 @@ export default function LoginSignup() {
         <div className="mt-4 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-400 hover:underline"
+            className="hover:underline bg-transparent"
           >
             {isLogin ? "Don't have an account? Signup" : "Already have an account? Login"}
           </button>

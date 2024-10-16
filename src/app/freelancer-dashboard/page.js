@@ -1,14 +1,15 @@
-"use client"; // Required for client-side interactivity
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
+import { FaUser, FaSignOutAlt, FaProjectDiagram } from "react-icons/fa"; // Import React Icons
 
 export default function FreelancerDashboard() {
   const [user, setUser] = useState(null);
-  const [freelancer, setFreelancer] = useState(null); // State to store freelancer information
+  const [freelancer, setFreelancer] = useState(null);
   const [projects, setProjects] = useState([]);
-  const [currentProjects, setCurrentProjects] = useState([]); // State to store current projects
+  const [currentProjects, setCurrentProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -18,9 +19,9 @@ export default function FreelancerDashboard() {
     if (storedUser) {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      fetchFreelancerData(userData.user_id); // Fetch freelancer data
+      fetchFreelancerData(userData.user_id);
     } else {
-      router.push("/login"); // Redirect to login if no user is found
+      router.push("/login");
     }
   }, [router]);
 
@@ -29,15 +30,13 @@ export default function FreelancerDashboard() {
       const { data, error } = await supabase
         .from("freelancers")
         .select("*")
-        .eq("user_id", userId) // Get freelancer by user_id
-        .single(); // Get single freelancer data
+        .eq("user_id", userId)
+        .single();
 
       if (error) throw error;
       setFreelancer(data);
-
-      // After fetching freelancer data, fetch available and current projects
       fetchAvailableProjects();
-      fetchCurrentProjects(data.freelancer_id); // Fetch current projects
+      fetchCurrentProjects(data.freelancer_id);
     } catch (error) {
       console.error("Error fetching freelancer data:", error);
       setError("Failed to fetch freelancer data.");
@@ -49,7 +48,7 @@ export default function FreelancerDashboard() {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .is("freelancer_id", null); // Fetch projects that are not yet assigned
+        .is("freelancer_id", null);
 
       if (error) throw error;
       setProjects(data);
@@ -64,7 +63,7 @@ export default function FreelancerDashboard() {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .eq("freelancer_id", freelancerId); // Fetch projects assigned to the freelancer
+        .eq("freelancer_id", freelancerId);
 
       if (error) throw error;
       setCurrentProjects(data);
@@ -81,14 +80,13 @@ export default function FreelancerDashboard() {
     try {
       const { error } = await supabase
         .from("projects")
-        .update({ freelancer_id: freelancer.freelancer_id }) // Update the project with the freelancer's ID
+        .update({ freelancer_id: freelancer.freelancer_id })
         .eq("project_id", projectId);
 
       if (error) throw error;
 
-      // Refresh the projects list after selection
       fetchAvailableProjects();
-      fetchCurrentProjects(freelancer.freelancer_id); // Refresh current projects
+      fetchCurrentProjects(freelancer.freelancer_id);
     } catch (error) {
       console.error("Error selecting project:", error);
       setError("Failed to select project.");
@@ -97,27 +95,25 @@ export default function FreelancerDashboard() {
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
-    router.push("/login"); // Redirect to login page
+    router.push("/login");
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-900">
       {/* Sidebar */}
-      <div className="w-1/4 bg-gray-800 p-6">
+      <div className="w-full md:w-1/4 bg-gray-800 p-6 md:h-auto">
         <h2 className="text-2xl font-bold text-white mb-4">Freelancer Details</h2>
         {freelancer ? (
           <div className="text-white">
-            <p><strong>Name:</strong> {user.name}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Experience Level:</strong> {freelancer.experience_level}</p>
-            <p>
-              <strong>Skills:</strong> {Array.isArray(freelancer.skills) ? freelancer.skills.join(", ") : "No skills listed"}
-            </p>
+            <p className="flex items-center"> <strong>Name:&nbsp;</strong> {user.name}</p>
+            <p className="flex items-center"> <strong>Email:&nbsp;</strong> {user.email}</p>
+            <p className="flex items-center"> <strong>Experience Level:&nbsp;</strong> {freelancer.experience_level}</p>
+            <p className="flex items-center"> <strong>Skills:&nbsp;</strong> {Array.isArray(freelancer.skills) ? freelancer.skills.join(", ") : (typeof freelancer.skills === 'string' ? freelancer.skills.split(',').join(', ') : "No skills listed")}</p>
             <button
               onClick={handleSignOut}
-              className="mt-6 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+              className="mt-6 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 flex items-center"
             >
-              Sign Out
+              <FaSignOutAlt className="mr-2" /> Sign Out
             </button>
           </div>
         ) : (
@@ -133,9 +129,9 @@ export default function FreelancerDashboard() {
 
         <h3 className="text-2xl font-semibold text-white mb-4">Current Projects</h3>
         {currentProjects.length > 0 ? (
-          <ul className="list-disc list-inside bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
+          <ul className="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
             {currentProjects.map((project) => (
-              <li key={project.project_id} className="text-white mb-4">
+              <li key={project.project_id} className="text-white mb-4 border-b border-gray-700 pb-2">
                 <strong>Project Name:</strong> {project.project_name} <br />
                 <strong>Project Description:</strong> {project.project_description} <br />
                 <strong>Specified Price:</strong> ${project.specified_price} <br />
@@ -148,17 +144,17 @@ export default function FreelancerDashboard() {
 
         <h3 className="text-2xl font-semibold text-white mb-4">Available Projects</h3>
         {projects.length > 0 ? (
-          <ul className="list-disc list-inside bg-gray-800 p-4 rounded-lg shadow-lg">
+          <ul className="bg-gray-800 p-4 rounded-lg shadow-lg">
             {projects.map((project) => (
-              <li key={project.project_id} className="text-white mb-4">
+              <li key={project.project_id} className="text-white mb-4 border-b border-gray-700 pb-2">
                 <strong>Project Name:</strong> {project.project_name} <br />
                 <strong>Project Description:</strong> {project.project_description} <br />
                 <strong>Specified Price:</strong> ${project.specified_price} <br />
                 <button
                   onClick={() => handleSelectProject(project.project_id)}
-                  className="mt-2 bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700"
+                  className="mt-2 bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700 flex items-center"
                 >
-                  Select Project
+                  <FaProjectDiagram className="mr-2" /> Select Project
                 </button>
               </li>
             ))}

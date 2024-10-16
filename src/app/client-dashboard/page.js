@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
+import { FaSignOutAlt, FaPlusCircle } from 'react-icons/fa'; // Importing icons
 
 export default function ClientDashboard() {
   const [user, setUser] = useState(null);
@@ -92,9 +93,9 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-900 md:flex-row">
       {/* Sidebar */}
-      <div className="w-1/4 bg-gray-800 p-6">
+      <div className="w-full md:w-1/4 bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-white mb-4">Client Details</h2>
         {client ? (
           <div className="text-white">
@@ -103,9 +104,9 @@ export default function ClientDashboard() {
             <p><strong>Company Name:</strong> {client.company_name}</p>
             <button
               onClick={handleSignOut}
-              className="mt-6 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+              className="mt-6 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
             >
-              Sign Out
+              <FaSignOutAlt className="mr-2" /> Sign Out
             </button>
           </div>
         ) : (
@@ -127,7 +128,7 @@ export default function ClientDashboard() {
               type="text"
               value={newProjectName}
               onChange={(e) => setNewProjectName(e.target.value)}
-              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none"
+              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
           </div>
@@ -137,7 +138,7 @@ export default function ClientDashboard() {
             <textarea
               value={newProjectDescription}
               onChange={(e) => setNewProjectDescription(e.target.value)}
-              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none"
+              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
           </div>
@@ -148,30 +149,30 @@ export default function ClientDashboard() {
               type="number"
               value={newProjectPrice}
               onChange={(e) => setNewProjectPrice(e.target.value)}
-              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none"
+              className="w-full p-3 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 w-full"
+            className="flex items-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 w-full"
           >
-            Post Project
+            <FaPlusCircle className="mr-2" /> Post Project
           </button>
         </form>
 
         <h3 className="text-2xl font-semibold text-white mb-2">Posted Projects</h3>
         {projects.length > 0 ? (
-          <ul className="list-disc list-inside bg-gray-800 p-4 rounded-lg shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {projects.map((project) => (
-              <li key={project.project_id} className="text-white mb-2">
-                <strong>Project Name:</strong> {project.project_name} <br />
-                <strong>Project Description:</strong> {project.project_description} <br />
-                <strong>Specified Price:</strong> ${project.specified_price} <br />
-              </li>
+              <div key={project.project_id} className="bg-gray-800 p-4 rounded-lg shadow-md">
+                <h4 className="text-lg font-semibold text-white">{project.project_name}</h4>
+                <p className="text-gray-400">{project.project_description}</p>
+                <p className="text-white mt-2"><strong>Specified Price:</strong> ${project.specified_price}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <p className="text-white">No projects posted yet.</p>
         )}

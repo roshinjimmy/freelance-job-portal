@@ -1,19 +1,29 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 export default function HomePage() {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push("/login"); // Navigates to the login page
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col justify-center items-center">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold mb-4">Welcome to Your Freelance Portal</h1>
-        <p className="text-lg mb-6">Connect clients and freelancers with ease.</p>
-        <div>
-          <a href="/login" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-            Get Started
-          </a>
-        </div>
-      </div>
-      <div className="mt-10">
-        <img src="/path-to-your-image.jpg" alt="Freelancing" className="w-full max-w-lg rounded-lg shadow-lg" />
+    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 flex flex-col justify-center items-center p-6">
+      <div className="text-center max-w-3xl">
+        <h1 className="text-5xl md:text-6xl font-bold mb-4 text-white leading-tight">
+          Welcome to Your Freelance Portal
+        </h1>
+        <p className="text-lg md:text-xl text-gray-400 mb-8">
+          Connecting clients and freelancers seamlessly for collaborative success.
+        </p>
+        <button
+          onClick={handleGetStarted}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-full transition duration-300 shadow-lg"
+        >
+          Get Started
+        </button>
       </div>
     </div>
   );
