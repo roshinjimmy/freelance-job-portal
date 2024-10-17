@@ -35,7 +35,9 @@ export default function AdminDashboard() {
 
   const fetchClients = async () => {
     try {
-      const { data, error } = await supabase.rpc("fetch_clients_with_user_data");
+      const { data, error } = await supabase.rpc(
+        "fetch_clients_with_user_data"
+      );
       if (error) throw error;
       setClients(data);
     } catch (error) {
@@ -46,7 +48,9 @@ export default function AdminDashboard() {
 
   const fetchFreelancers = async () => {
     try {
-      const { data, error } = await supabase.rpc("fetch_freelancers_with_user_data");
+      const { data, error } = await supabase.rpc(
+        "fetch_freelancers_with_user_data"
+      );
       if (error) throw error;
       setFreelancers(data);
     } catch (error) {
@@ -57,7 +61,9 @@ export default function AdminDashboard() {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase.rpc("fetch_projects_with_clients_freelancers");
+      const { data, error } = await supabase.rpc(
+        "fetch_projects_with_clients_freelancers"
+      );
       if (error) throw error;
       setProjects(data);
     } catch (error) {
@@ -67,8 +73,16 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteClient = async (clientId) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this client?"
+    );
+    if (!isConfirmed) return;
+
     try {
-      const { error } = await supabase.from("clients").delete().eq("client_id", clientId);
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("client_id", clientId);
       if (error) throw error;
       fetchClients();
     } catch (error) {
@@ -78,8 +92,16 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteFreelancer = async (freelancerId) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this freelancer?"
+    );
+    if (!isConfirmed) return;
+
     try {
-      const { error } = await supabase.from("freelancers").delete().eq("freelancer_id", freelancerId);
+      const { error } = await supabase
+        .from("freelancers")
+        .delete()
+        .eq("freelancer_id", freelancerId);
       if (error) throw error;
       fetchFreelancers();
     } catch (error) {
@@ -89,8 +111,16 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProject = async (projectId) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this project?"
+    );
+    if (!isConfirmed) return;
+
     try {
-      const { error } = await supabase.from("projects").delete().eq("project_id", projectId);
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("project_id", projectId);
       if (error) throw error;
       fetchProjects();
     } catch (error) {
@@ -99,129 +129,94 @@ export default function AdminDashboard() {
     }
   };
 
-  // Sign out function
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
     localStorage.removeItem("user");
     router.push("/login");
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
-        >
-          <FaSignOutAlt className="mr-2" /> Sign Out
-        </button>
-      </div>
-      {error && <p className="text-red-500">{error}</p>}
+    <div className="min-h-screen bg-gray-900 text-white p-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <button
+            onClick={handleSignOut}
+            className="bg-red-600 py-2 px-4 rounded-md hover:bg-red-700 flex items-center transition duration-200"
+          >
+            <FaSignOutAlt className="mr-2" /> Sign Out
+          </button>
+        </div>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {/* Clients Section */}
-      <h2 className="text-2xl font-semibold text-white mb-4">Clients</h2>
-      <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 overflow-x-auto">
-        <table className="table-auto w-full text-left">
-          <thead>
-            <tr className="text-white">
-              <th className="px-4 py-2">Client ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Company Name</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((client) => (
-              <tr key={client.client_id} className="text-gray-300 hover:bg-gray-700 transition duration-200">
-                <td className="border px-4 py-2">{client.client_id}</td>
-                <td className="border px-4 py-2">{client.name}</td>
-                <td className="border px-4 py-2">{client.email}</td>
-                <td className="border px-4 py-2">{client.company_name}</td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => handleDeleteClient(client.client_id)}
-                    className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition duration-200 flex items-center"
-                  >
-                    <FaTrash className="mr-1" /> Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        {/* Clients Section */}
+        <Section title="Clients" data={clients} onDelete={handleDeleteClient} />
 
-      {/* Freelancers Section */}
-      <h2 className="text-2xl font-semibold text-white mb-4">Freelancers</h2>
-      <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 overflow-x-auto">
-        <table className="table-auto w-full text-left">
-          <thead>
-            <tr className="text-white">
-              <th className="px-4 py-2">Freelancer ID</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Experience Level</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {freelancers.map((freelancer) => (
-              <tr key={freelancer.freelancer_id} className="text-gray-300 hover:bg-gray-700 transition duration-200">
-                <td className="border px-4 py-2">{freelancer.freelancer_id}</td>
-                <td className="border px-4 py-2">{freelancer.name}</td>
-                <td className="border px-4 py-2">{freelancer.email}</td>
-                <td className="border px-4 py-2">{freelancer.experience_level}</td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => handleDeleteFreelancer(freelancer.freelancer_id)}
-                    className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition duration-200 flex items-center"
-                  >
-                    <FaTrash className="mr-1" /> Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        {/* Freelancers Section */}
+        <Section
+          title="Freelancers"
+          data={freelancers}
+          onDelete={handleDeleteFreelancer}
+        />
 
-      {/* Projects Section */}
-      <h2 className="text-2xl font-semibold text-white mb-4">Projects</h2>
-      <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 overflow-x-auto">
-        <table className="table-auto w-full text-left">
-          <thead>
-            <tr className="text-white">
-              <th className="px-4 py-2">Project ID</th>
-              <th className="px-4 py-2">Project Name</th>
-              <th className="px-4 py-2">Client</th>
-              <th className="px-4 py-2">Freelancer Assigned</th>
-              <th className="px-4 py-2">Price</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => (
-              <tr key={project.project_id} className="text-gray-300 hover:bg-gray-700 transition duration-200">
-                <td className="border px-4 py-2">{project.project_id}</td>
-                <td className="border px-4 py-2">{project.project_name}</td>
-                <td className="border px-4 py-2">{project.client_name}</td>
-                <td className="border px-4 py-2">{project.freelancer_name || "Not Assigned"}</td>
-                <td className="border px-4 py-2">${project.specified_price}</td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => handleDeleteProject(project.project_id)}
-                    className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition duration-200 flex items-center"
-                  >
-                    <FaTrash className="mr-1" /> Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Projects Section */}
+        <Section
+          title="Projects"
+          data={projects}
+          onDelete={handleDeleteProject}
+        />
       </div>
     </div>
   );
 }
+
+// Section Component for rendering tables
+const Section = ({ title, data, onDelete }) => (
+  <div className="mb-8">
+    <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+    <div className="overflow-x-auto bg-gray-800 p-4 rounded-lg shadow-lg">
+      {data.length > 0 ? (
+        <table className="min-w-full table-auto">
+          <thead>
+            <tr className="bg-gray-700">
+              {Object.keys(data[0]).map((key) => (
+                <th
+                  key={key}
+                  className="px-4 py-3 text-left text-sm font-semibold text-gray-300"
+                >
+                  {key.replace(/_/g, " ").toUpperCase()}
+                </th>
+              ))}
+              <th className="px-4 py-3 text-sm font-semibold text-gray-300">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item) => (
+              <tr
+                key={item.id}
+                className="border-t border-gray-700 hover:bg-gray-600 transition-all"
+              >
+                {Object.values(item).map((value, idx) => (
+                  <td key={idx} className="px-4 py-3 text-gray-300">
+                    {value}
+                  </td>
+                ))}
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className="bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition-all flex items-center"
+                  >
+                    <FaTrash className="mr-1" /> Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-gray-400">No {title.toLowerCase()} found.</p>
+      )}
+    </div>
+  </div>
+);
