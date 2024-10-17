@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
-import { FaSignOutAlt, FaPlusCircle } from 'react-icons/fa'; // Importing icons
+import { FaSignOutAlt, FaPlusCircle, FaTrash } from 'react-icons/fa'; // Importing icons
 
 export default function ClientDashboard() {
   const [user, setUser] = useState(null);
@@ -84,6 +84,23 @@ export default function ClientDashboard() {
     } catch (error) {
       console.error("Error posting project:", error);
       setError("Failed to post project.");
+    }
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("project_id", projectId); // Delete project by project_id
+
+      if (error) throw error;
+
+      // Fetch the updated list of projects
+      fetchProjects(client.client_id);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError("Failed to delete project.");
     }
   };
 
@@ -170,6 +187,12 @@ export default function ClientDashboard() {
                 <h4 className="text-lg font-semibold text-white">{project.project_name}</h4>
                 <p className="text-gray-400">{project.project_description}</p>
                 <p className="text-white mt-2"><strong>Specified Price:</strong> ${project.specified_price}</p>
+                <button
+                  onClick={() => handleDeleteProject(project.project_id)} // Delete button
+                  className="mt-4 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
+                >
+                  <FaTrash className="mr-2" /> Delete Project
+                </button>
               </div>
             ))}
           </div>
