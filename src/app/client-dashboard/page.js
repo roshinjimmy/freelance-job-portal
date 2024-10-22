@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
-import { FaSignOutAlt, FaPlusCircle, FaTrash } from "react-icons/fa"; // Importing icons
+import { FaSignOutAlt, FaPlusCircle, FaTrash, FaEdit } from "react-icons/fa"; // Importing icons
 
 export default function ClientDashboard() {
   const [user, setUser] = useState(null);
@@ -13,6 +13,7 @@ export default function ClientDashboard() {
   const [newProjectDescription, setNewProjectDescription] = useState(""); // Updated for project description
   const [newProjectPrice, setNewProjectPrice] = useState(""); // Updated for specified price
   const [error, setError] = useState("");
+  const [editProject, setEditProject] = useState(null); // State for project being edited
   const router = useRouter();
 
   useEffect(() => {
@@ -113,6 +114,42 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleEditProject = (project) => {
+    // Set the project to be edited
+    setEditProject(project);
+    setNewProjectName(project.project_name);
+    setNewProjectDescription(project.project_description);
+    setNewProjectPrice(project.specified_price);
+  };
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({
+          project_name: newProjectName,
+          project_description: newProjectDescription,
+          specified_price: newProjectPrice,
+        })
+        .eq("project_id", editProject.project_id); // Update the project using project_id
+
+      if (error) throw error;
+
+      // Reset form and state after update
+      setNewProjectName("");
+      setNewProjectDescription("");
+      setNewProjectPrice("");
+      setEditProject(null); // Clear the edit state
+      fetchProjects(client.client_id); // Fetch updated projects
+    } catch (error) {
+      console.error("Error updating project:", error);
+      setError("Failed to update project.");
+    }
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem("user");
     router.push("/login"); // Redirect to login page
@@ -151,11 +188,11 @@ export default function ClientDashboard() {
         <h1 className="text-3xl font-bold text-white mb-6">Client Dashboard</h1>
 
         <form
-          onSubmit={handlePostProject}
+          onSubmit={editProject ? handleUpdateProject : handlePostProject} // Dynamically handle add/edit
           className="mb-6 bg-gray-800 p-6 rounded-lg shadow-lg"
         >
           <h3 className="text-xl font-semibold text-white mb-2">
-            Post a New Project
+            {editProject ? "Edit Project" : "Post a New Project"}
           </h3>
           {error && <p className="text-red-500">{error}</p>}
 
@@ -201,60 +238,61 @@ export default function ClientDashboard() {
             type="submit"
             className="flex items-center bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 w-full"
           >
-            <FaPlusCircle className="mr-2" /> Post Project
+            <FaPlusCircle className="mr-2" /> {editProject ? "Update Project" : "Post Project"}
           </button>
         </form>
-        <h3 className="text-2xl font-semibold text-white mb-2">
-          Posted Projects
-        </h3>
+
+        <h2 className="text-2xl font-bold text-white mb-4">Your Projects</h2>
+
         {projects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ul className="space-y-4">
             {projects.map((project) => (
-              <div
+              <li
                 key={project.project_id}
-                className="bg-gray-800 p-4 rounded-lg shadow-md"
+                className="bg-gray-800 p-6 rounded-lg shadow-lg"
               >
-                <h4 className="text-lg font-semibold text-white">
-                  {project.project_name}
-                </h4>
-                <p className="text-gray-400">{project.project_description}</p>
-                <p className="text-white mt-2">
-                  <strong>Specified Price:</strong> ${project.specified_price}
-                </p>
-
-                {/* Show assigned freelancer or message if no freelancer is assigned */}
-                {project.freelancers ? (
-                  <p className="text-white mt-2">
-                    <strong>Assigned Freelancer:</strong>{" "}
-                    {project.freelancers.users ? (
-                      <span>
-                        {project.freelancers.users.name} -{" "}
-                        {project.freelancers.users.email}
-                      </span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {project.project_name}
+                    </h3>
+                    <p className="text-gray-400 mb-2">
+                      {project.project_description}
+                    </p>
+                    <p className="text-gray-400 mb-2">
+                      Price: {project.specified_price}
+                    </p>
+                    {project.freelancers && project.freelancers.users ? (
+                      <p className="text-gray-400">
+                        Freelancer: {project.freelancers.users.name}
+                      </p>
                     ) : (
-                      <span>Freelancer details unavailable</span>
+                      <p className="text-gray-400">No freelancer assigned yet.</p>
                     )}
-                  </p>
-                ) : (
-                  <p className="text-red-400 mt-2">
-                    <strong>No freelancer assigned</strong>
-                  </p>
-                )}
-
-                {/* Delete project button */}
-                <button
-                  onClick={() => handleDeleteProject(project.project_id)} // Delete button
-                  className="mt-4 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
-                >
-                  <FaTrash className="mr-2" /> Delete Project
-                </button>
-              </div>
+                  </div>
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => handleEditProject(project)}
+                      className="flex items-center bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200"
+                    >
+                      <FaEdit className="mr-2" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProject(project.project_id)}
+                      className="flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
+                    >
+                      <FaTrash className="mr-2" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
         ) : (
-          <p className="text-white">No projects posted yet.</p>
+          <p className="text-gray-400">No projects found.</p>
         )}
       </div>
     </div>
   );
 }
+
