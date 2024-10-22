@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
-import { FaUser, FaSignOutAlt, FaProjectDiagram } from "react-icons/fa"; // Import React Icons
+import { FaUser, FaSignOutAlt, FaProjectDiagram, FaTrash } from "react-icons/fa"; // Import React Icons
 
 export default function FreelancerDashboard() {
   const [user, setUser] = useState(null);
@@ -90,6 +90,24 @@ export default function FreelancerDashboard() {
     } catch (error) {
       console.error("Error selecting project:", error);
       setError("Failed to select project.");
+    }
+  };
+
+  const handleCancelProject = async (projectId) => {
+    setError("");
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ freelancer_id: null })
+        .eq("project_id", projectId);
+
+      if (error) throw error;
+
+      fetchAvailableProjects(); // Refresh available projects
+      fetchCurrentProjects(freelancer.freelancer_id); // Refresh current projects
+    } catch (error) {
+      console.error("Error canceling project:", error);
+      setError("Failed to cancel project.");
     }
   };
 
@@ -191,6 +209,12 @@ export default function FreelancerDashboard() {
                 <p className="text-white mt-2">
                   <strong>Specified Price:</strong> ${project.specified_price}
                 </p>
+                <button
+                  onClick={() => handleCancelProject(project.project_id)}
+                  className="mt-2 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200 flex items-center"
+                >
+                  <FaTrash className="mr-2" /> Cancel Project
+                </button>
               </div>
             ))}
           </div>
