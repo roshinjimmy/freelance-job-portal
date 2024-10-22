@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../supabaseClient"; // Import the Supabase client
-import { FaSignOutAlt, FaPlusCircle, FaTrash } from 'react-icons/fa'; // Importing icons
+import { FaSignOutAlt, FaPlusCircle, FaTrash } from "react-icons/fa"; // Importing icons
 
 export default function ClientDashboard() {
   const [user, setUser] = useState(null);
@@ -49,7 +49,18 @@ export default function ClientDashboard() {
     try {
       const { data, error } = await supabase
         .from("projects")
-        .select("*")
+        .select(
+          `
+          *,
+          freelancers:freelancer_id (
+            user_id,
+            users:user_id (
+              name,
+              email
+            )
+          )
+        `
+        )
         .eq("client_id", clientId); // Fetch projects using client_id
 
       if (error) throw error;
@@ -65,14 +76,12 @@ export default function ClientDashboard() {
     setError("");
 
     try {
-      const { error } = await supabase
-        .from("projects")
-        .insert({
-          project_name: newProjectName,
-          project_description: newProjectDescription, // Updated for project description
-          specified_price: newProjectPrice, // Updated for specified price
-          client_id: client.client_id, // Use the client_id from the client state
-        });
+      const { error } = await supabase.from("projects").insert({
+        project_name: newProjectName,
+        project_description: newProjectDescription, // Updated for project description
+        specified_price: newProjectPrice, // Updated for specified price
+        client_id: client.client_id, // Use the client_id from the client state
+      });
 
       if (error) throw error;
 
@@ -116,9 +125,15 @@ export default function ClientDashboard() {
         <h2 className="text-2xl font-bold text-white mb-4">Client Details</h2>
         {client ? (
           <div className="text-white">
-            <p><strong>Name:</strong> {user.name}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Company Name:</strong> {client.company_name}</p>
+            <p>
+              <strong>Name:</strong> {user.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {user.email}
+            </p>
+            <p>
+              <strong>Company Name:</strong> {client.company_name}
+            </p>
             <button
               onClick={handleSignOut}
               className="mt-6 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
@@ -135,12 +150,19 @@ export default function ClientDashboard() {
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold text-white mb-6">Client Dashboard</h1>
 
-        <form onSubmit={handlePostProject} className="mb-6 bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold text-white mb-2">Post a New Project</h3>
+        <form
+          onSubmit={handlePostProject}
+          className="mb-6 bg-gray-800 p-6 rounded-lg shadow-lg"
+        >
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Post a New Project
+          </h3>
           {error && <p className="text-red-500">{error}</p>}
 
           <div className="mb-4">
-            <label className="block text-lg font-medium text-gray-300">Project Name</label>
+            <label className="block text-lg font-medium text-gray-300">
+              Project Name
+            </label>
             <input
               type="text"
               value={newProjectName}
@@ -151,7 +173,9 @@ export default function ClientDashboard() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-lg font-medium text-gray-300">Project Description</label>
+            <label className="block text-lg font-medium text-gray-300">
+              Project Description
+            </label>
             <textarea
               value={newProjectDescription}
               onChange={(e) => setNewProjectDescription(e.target.value)}
@@ -161,7 +185,9 @@ export default function ClientDashboard() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-lg font-medium text-gray-300">Specified Price</label>
+            <label className="block text-lg font-medium text-gray-300">
+              Specified Price
+            </label>
             <input
               type="number"
               value={newProjectPrice}
@@ -178,15 +204,44 @@ export default function ClientDashboard() {
             <FaPlusCircle className="mr-2" /> Post Project
           </button>
         </form>
-
-        <h3 className="text-2xl font-semibold text-white mb-2">Posted Projects</h3>
+        <h3 className="text-2xl font-semibold text-white mb-2">
+          Posted Projects
+        </h3>
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {projects.map((project) => (
-              <div key={project.project_id} className="bg-gray-800 p-4 rounded-lg shadow-md">
-                <h4 className="text-lg font-semibold text-white">{project.project_name}</h4>
+              <div
+                key={project.project_id}
+                className="bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <h4 className="text-lg font-semibold text-white">
+                  {project.project_name}
+                </h4>
                 <p className="text-gray-400">{project.project_description}</p>
-                <p className="text-white mt-2"><strong>Specified Price:</strong> ${project.specified_price}</p>
+                <p className="text-white mt-2">
+                  <strong>Specified Price:</strong> ${project.specified_price}
+                </p>
+
+                {/* Show assigned freelancer or message if no freelancer is assigned */}
+                {project.freelancers ? (
+                  <p className="text-white mt-2">
+                    <strong>Assigned Freelancer:</strong>{" "}
+                    {project.freelancers.users ? (
+                      <span>
+                        {project.freelancers.users.name} -{" "}
+                        {project.freelancers.users.email}
+                      </span>
+                    ) : (
+                      <span>Freelancer details unavailable</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-red-400 mt-2">
+                    <strong>No freelancer assigned</strong>
+                  </p>
+                )}
+
+                {/* Delete project button */}
                 <button
                   onClick={() => handleDeleteProject(project.project_id)} // Delete button
                   className="mt-4 flex items-center bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
