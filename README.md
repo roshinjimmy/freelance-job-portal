@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Freelance Job Portal
 
-## Getting Started
+This is a **Freelance Job Portal** built with **Next.js** and **Supabase** to connect freelancers with clients. This project is built as part of the DBMS Lab Project of KTU Semester 5. Freelancers can view available projects, select a project, and manage their current projects. Clients can post jobs and monitor the status of their projects. The platform offers an intuitive user interface with mobile responsiveness.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Freelancer Features:
+- **View Available Projects**: Browse and view all unassigned projects posted by clients.
+- **Select a Project**: Freelancers can select an available project to work on.
+- **View Current Projects**: Freelancers can view all the projects they are currently working on.
+- **Cancel a Project**: Freelancers can cancel a selected project, making it available again for others.
+- **Profile Management**: Freelancers can view their profile details, including experience level and skills.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Client Features:
+- **Post a Project**: Clients can post new projects specifying the required skills, project description, and the price.
+- **View Current Projects**: Clients can monitor the progress of projects they have posted and track the assigned freelancer.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- **Frontend**: Next.js, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL)
+- **Icons**: React Icons (FontAwesome)
